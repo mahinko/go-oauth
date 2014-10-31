@@ -372,9 +372,27 @@ func (c *Client) do(client *http.Client, method string, credentials *Credentials
 	return client.Do(req)
 }
 
+func (c *Client) doXML(client *http.Client, method string, credentials *Credentials, urlStr string, body []byte) (*http.Response, error) {
+	req, err := http.NewRequest(method, urlStr, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range c.Header {
+		req.Header[k] = v
+	}
+	req.Header.Set("Content-Type", "application/xml")
+	req.Header.Set("Authorization", c.AuthorizationHeader(credentials, method, req.URL, map[string][]string{}))
+	return client.Do(req)
+}
+
 // Post issues a POST with the specified form.
 func (c *Client) Post(client *http.Client, credentials *Credentials, urlStr string, form url.Values) (*http.Response, error) {
 	return c.do(client, "POST", credentials, urlStr, form)
+}
+
+// Post issues a POST xml data.
+func (c *Client) PostXML(client *http.Client, credentials *Credentials, urlStr string, body []byte) (*http.Response, error) {
+	return c.doXML(client, "POST", credentials, urlStr, body)
 }
 
 // Delete issues a DELETE with the specified form.
